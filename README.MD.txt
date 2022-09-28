@@ -1,0 +1,1 @@
+Ce fichier doit contenir toutes les infos concernant le projet
