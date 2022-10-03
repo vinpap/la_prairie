@@ -41,9 +41,3 @@ for h in chansons_info: print(h, chansons_info[h])
 
 
 #saved_column = df.column_name #you can also use df['column_name']
-
-
-
-    
-
-
