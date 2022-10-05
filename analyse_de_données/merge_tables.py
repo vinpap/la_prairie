@@ -1,15 +1,25 @@
 import pandas as pd
 import sqlite3
 
+"""Le code contenu dans ce fichier rassemble toutes les données pertinentes de 
+la base de données dans un fichier csv unique. Dans ce fichier, chaque ligne
+correspond à une musique"""
+
 connection = sqlite3.connect("Sources_data.db")
 cursor = connection.cursor()
 
 def retrieve_years_popularities(songs_df):
+    
+    """Récupère la colonne popularity de la table par_annees_o et l'intègre à 
+    notre table finale. Cette colonne correspond à la popularité moyenne de 
+    chaque année de sortie."""
 
     songs_year_popularities = []
     processed_songs = 0
 
     print("Retrieving songs' year popularity...")
+    # Ci-dessous, on récupère l'année de chaque musique puis on va chercher la
+    # popularité correspondante à cette année dans par_annees_o
     for index, row in songs_df.iterrows():
         song_year = row["release_date"]
         try:
@@ -27,6 +37,10 @@ def retrieve_years_popularities(songs_df):
     return songs_df
 
 def retrieve_artists_data(songs_df):
+    
+    """Cette fonction récupère toutes les informations concernant les artistes
+    pour chaque musique : nom des artistes, genres des artistes, popularité
+    moyenne de ces genres, popularité et nombre de followers des artistes"""
 
     print("Retrieving artists' data...")
     artists_genres_list = []
@@ -96,14 +110,14 @@ def retrieve_artists_data(songs_df):
         total_artists_followers = 0
 
         for a in artists_list:
-            # Looking for the artists' mean followers count
+            # On cherche la moyenne du nombre de followers des artistes
             try:
                 followers = pd.read_sql_query(f"SELECT followers from par_artistes_o WHERE artists = {a}", connection)["followers"].iat[0]
             except (IndexError, pd.io.sql.DatabaseError):
                 try:
                     followers = pd.read_sql_query(f"SELECT followers from artistes WHERE artists = {a}", connection)["followers"].iat[0]
                 except (IndexError, pd.io.sql.DatabaseError): continue
-            total_artists_followers += pop
+            total_artists_followers += followers
             nb_artists += 1
 
         if nb_artists != 0: artists_mean_followers = total_artists_followers/nb_artists
@@ -131,8 +145,12 @@ def retrieve_artists_data(songs_df):
     return songs_df
 
 def make_table():
+    
+    """Ici, on crée et on sauvegarde la table finale"""
 
     final_df = None
+    # csv_filepath stocke le chemin vers le fichier où l'on souhaite enregistrer 
+    # la table csv
     csv_filepath = "clean_data.csv"
 
     chansons_query = """SELECT id, name, valence, acousticness, danceability,
@@ -158,7 +176,6 @@ def make_table():
     chansons_df = retrieve_years_popularities(chansons_df)
 
 
-
     final_df = chansons_df
     print(final_df.info())
 
@@ -169,5 +186,4 @@ def make_table():
 
 
 make_table()
-
 connection.close()
